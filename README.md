@@ -24,7 +24,9 @@ Feito para ser simples, acolhedor e seguro para os pequeninos. 💛
   arquivos estáticos; se algum não puder tocar, o app usa a voz do próprio
   navegador como reserva.
 - As palavras ficam **destacadas** enquanto são lidas — ajuda na alfabetização.
-- **Ilustração em cada página**, para a criança ver a cena acontecer.
+- **Ilustração em 3D (estilo desenho animado) em cada página**, para a criança
+  ver a cena acontecer. Se alguma imagem faltar, o app usa uma ilustração
+  vetorial (SVG) embutida como reserva.
 - **Vira a página sozinho** ao terminar de ler (opcional).
 - Uma **oração** carinhosa ao final de cada história.
 - Funciona no **celular, tablet e computador**; pode ser instalado como app
@@ -58,7 +60,8 @@ index.html               # Estrutura do app
 styles.css               # Visual (livro infantil, responsivo)
 app.js                   # Lógica: navegação, voz, destaque de palavras
 stories.js               # Texto das histórias (páginas + oração)
-scenes/                  # Ilustrações SVG de cada cena
+img/                     # Ilustrações 3D de cada cena (<id>-<cena>.jpg)
+scenes/                  # Ilustrações SVG (reserva, caso falte a imagem)
   base.js                #   cena de oração + fallback
   <historia>.js          #   ilustrações de cada história
 audio/                   # Narração neural pré-gravada
@@ -80,6 +83,21 @@ python3 scripts/gerar_audio.py           # voz padrão: pt-BR-FranciscaNeural
 # trocar a voz:
 VOICE=pt-BR-AntonioNeural python3 scripts/gerar_audio.py --force
 ```
+
+### 🎨 Regerar as ilustrações
+
+As imagens 3D já vêm prontas. Para regerar (ex.: mudar o estilo):
+
+```bash
+python3 scripts/gerar_imagens.py            # modelo padrão: sana (via Pollinations)
+python3 scripts/gerar_imagens.py --force    # regenera todas
+STYLE="cute watercolor storybook, no text" python3 scripts/gerar_imagens.py --force
+```
+
+> As ilustrações são geradas com a [Pollinations.ai](https://pollinations.ai)
+> (gratuito, sem chave de API). Os prompts de cada cena ficam em
+> `scripts/image_prompts.json`. Como as cenas são fixas, as imagens são geradas
+> uma vez e servidas estaticamente.
 
 > A narração neural é gerada com [`edge-tts`](https://github.com/rany2/edge-tts)
 > (vozes neurais da Microsoft), gratuito e sem chave de API. Como o texto das
