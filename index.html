@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#4a2f8f" />
+    <title>Bíblia Kids — Histórias da Bíblia para Crianças</title>
+    <meta
+      name="description"
+      content="Livro digital interativo de histórias bíblicas católicas, com narração em voz alta para crianças."
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Bíblia Kids" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%96%3C/text%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <!-- ================= TELA: BIBLIOTECA ================= -->
+    <main id="library" class="screen is-active">
+      <header class="lib-header">
+        <div class="lib-brand">
+          <span class="lib-logo" aria-hidden="true">📖</span>
+          <div>
+            <h1>Bíblia Kids</h1>
+            <p>Histórias da Bíblia para crianças</p>
+          </div>
+        </div>
+        <p class="lib-intro">
+          Escolha uma história e clique em <strong>▶ Ouvir</strong> para eu
+          contar para você! ✨
+        </p>
+      </header>
+
+      <section id="story-grid" class="story-grid" aria-label="Histórias"></section>
+
+      <footer class="lib-footer">
+        <p>Feito com ❤️ para os pequeninos. “Deixem as crianças virem a mim.”</p>
+      </footer>
+    </main>
+
+    <!-- ================= TELA: LEITURA ================= -->
+    <section id="reader" class="screen reader" aria-label="Leitor de história">
+      <header class="reader-top">
+        <button id="back-btn" class="icon-btn" aria-label="Voltar para a biblioteca">
+          <span aria-hidden="true">←</span>
+        </button>
+        <div class="reader-title">
+          <h2 id="reader-title">Título</h2>
+          <span id="reader-ref" class="reader-ref">Referência</span>
+        </div>
+        <button id="settings-btn" class="icon-btn" aria-label="Configurações">
+          <span aria-hidden="true">⚙️</span>
+        </button>
+      </header>
+
+      <div class="book" id="book">
+        <button
+          class="page-arrow page-arrow--left"
+          id="prev-btn"
+          aria-label="Página anterior"
+        >
+          <span aria-hidden="true">‹</span>
+        </button>
+
+        <div class="page" id="page">
+          <div class="illustration" id="illustration" aria-hidden="true"></div>
+          <div class="page-text-wrap">
+            <p class="page-text" id="page-text"></p>
+          </div>
+        </div>
+
+        <button
+          class="page-arrow page-arrow--right"
+          id="next-btn"
+          aria-label="Próxima página"
+        >
+          <span aria-hidden="true">›</span>
+        </button>
+      </div>
+
+      <div class="reader-controls">
+        <div class="progress" id="progress" aria-hidden="true"></div>
+        <div class="control-row">
+          <button id="prev-btn-2" class="ctrl-btn ctrl-btn--ghost">
+            <span aria-hidden="true">◀</span> Anterior
+          </button>
+          <button id="play-btn" class="ctrl-btn ctrl-btn--play">
+            <span class="play-icon" aria-hidden="true">▶</span>
+            <span class="play-label">Ouvir</span>
+          </button>
+          <button id="next-btn-2" class="ctrl-btn ctrl-btn--ghost">
+            Próxima <span aria-hidden="true">▶</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= PAINEL: CONFIGURAÇÕES ================= -->
+    <div id="settings-overlay" class="overlay">
+      <div class="settings-panel" role="dialog" aria-label="Configurações">
+        <div class="settings-head">
+          <h3>Configurações</h3>
+          <button id="settings-close" class="icon-btn" aria-label="Fechar">
+            <span aria-hidden="true">✕</span>
+          </button>
+        </div>
+
+        <label class="setting">
+          <span>Velocidade da voz</span>
+          <input id="rate" type="range" min="0.6" max="1.2" step="0.05" value="0.9" />
+          <span id="rate-val" class="setting-val">Normal</span>
+        </label>
+
+        <label class="setting setting--switch">
+          <span>Virar a página sozinho</span>
+          <input id="autoadvance" type="checkbox" checked />
+          <span class="switch" aria-hidden="true"></span>
+        </label>
+
+        <label class="setting">
+          <span>Voz reserva do aparelho</span>
+          <select id="voice-select"></select>
+        </label>
+        <p class="setting-note">
+          A narração usa uma voz neural gravada. A “voz reserva” só é usada se o
+          áudio não puder tocar no seu aparelho. 🎙️
+        </p>
+
+        <p id="voice-warn" class="voice-warn" hidden>
+          Seu navegador não encontrou uma voz em português para a reserva. A
+          narração principal (áudio gravado) continua funcionando. 🙏
+        </p>
+      </div>
+    </div>
+
+    <script src="stories.js"></script>
+    <!-- Ilustrações das cenas (uma por história) -->
+    <script src="scenes/base.js"></script>
+    <script src="scenes/criacao.js"></script>
+    <script src="scenes/noe.js"></script>
+    <script src="scenes/davi.js"></script>
+    <script src="scenes/daniel.js"></script>
+    <script src="scenes/natal.js"></script>
+    <script src="scenes/tempestade.js"></script>
+    <script src="scenes/samaritano.js"></script>
+    <script src="scenes/ovelha.js"></script>
+    <script src="scenes/jonas.js"></script>
+    <script src="scenes/criancas.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
