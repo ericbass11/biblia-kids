@@ -293,10 +293,14 @@ body {
   display: block;
   position: relative;
 }
-.illustration svg {
+.illustration svg,
+.illustration .scene-img {
   width: 100%;
   height: 100%;
   display: block;
+}
+.illustration .scene-img {
+  object-fit: cover;
 }
 
 .page-text-wrap {

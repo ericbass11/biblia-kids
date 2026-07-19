@@ -123,13 +123,29 @@
     stopSpeech();
     const page = pages[pageIndex];
 
-    // Ilustração
+    // Ilustração: imagem (arte 3D) com fallback para o SVG embutido
     const key = currentStory.id + ":" + page.scene;
     const svg =
       (window.SCENES && (window.SCENES[key] || window.SCENES[page.scene])) ||
       (window.SCENES && window.SCENES["_fallback"]) ||
       "";
-    illustration.innerHTML = svg;
+    const imgName = currentStory.id + "-" + page.scene;
+    const img = new Image();
+    img.alt = "";
+    img.decoding = "async";
+    img.className = "scene-img";
+    img.onerror = () => {
+      // sem imagem específica? tenta a genérica (ex.: oração) e depois o SVG
+      if (!img.dataset.triedGeneric && page.scene) {
+        img.dataset.triedGeneric = "1";
+        img.src = "img/" + page.scene + ".jpg";
+        return;
+      }
+      illustration.innerHTML = svg;
+    };
+    illustration.innerHTML = "";
+    illustration.appendChild(img);
+    img.src = "img/" + imgName + ".jpg";
 
     // Texto com palavras clicáveis para destaque
     pageText.classList.toggle("prayer", !!page.isPrayer);
