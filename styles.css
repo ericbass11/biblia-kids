@@ -551,6 +551,12 @@ body {
 .setting--switch input:checked ~ .switch::after {
   transform: translateX(22px);
 }
+.setting-note {
+  margin: 8px 2px 0;
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.4;
+}
 .voice-warn {
   margin: 12px 0 0;
   font-size: 14px;

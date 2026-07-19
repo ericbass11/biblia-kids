@@ -35,6 +35,11 @@
   let voices = [];
   let chosenVoice = null;
 
+  // Narração em áudio neural (arquivos pré-gerados em /audio)
+  let currentAudio = null; // elemento <audio> em reprodução
+  let audioMarks = null; // marcação de palavras [{t, c}] da página atual
+  let lastMarkIdx = -1;
+
   // ===========================================================
   // BIBLIOTECA
   // ===========================================================
@@ -200,26 +205,88 @@
     }
   }
 
+  // Converte o valor do slider (0.6–1.2, "Normal" = 0.9) em velocidade de
+  // reprodução do áudio neural (1.0 = ritmo original gravado).
+  function audioPlaybackRate() {
+    const v = parseFloat(rateInput.value) || 0.9;
+    const r = v / 0.9;
+    return Math.min(1.6, Math.max(0.6, r));
+  }
+
+  // Ponto de entrada: tenta o áudio neural; se não houver/der erro, usa a voz
+  // do navegador (Web Speech API).
   function speakCurrent() {
-    if (!synth) return;
     stopSpeech();
     const page = pages[pageIndex];
+    const base = "audio/" + currentStory.id + "-" + pageIndex;
+
+    const audio = new Audio();
+    audio.preload = "auto";
+    currentAudio = audio;
+    audioMarks = null;
+    lastMarkIdx = -1;
+    let fellBack = false;
+
+    const fallback = () => {
+      if (fellBack) return;
+      fellBack = true;
+      currentAudio = null;
+      speakBrowser(page);
+    };
+
+    // Carrega a marcação de palavras (para o destaque sincronizado)
+    fetch(base + ".json")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data && currentAudio === audio) audioMarks = data.marks || [];
+      })
+      .catch(() => {});
+
+    audio.playbackRate = audioPlaybackRate();
+    audio.addEventListener("playing", () => setPlaying(true));
+    audio.addEventListener("timeupdate", () => syncHighlight(page, audio));
+    audio.addEventListener("ended", () => {
+      clearHighlight();
+      setPlaying(false);
+      currentAudio = null;
+      if (autoAdvance.checked && pageIndex < pages.length - 1) {
+        setTimeout(() => goTo(pageIndex + 1, true), 700);
+      }
+    });
+    audio.addEventListener("error", fallback);
+
+    audio.src = base + ".mp3";
+    const p = audio.play();
+    if (p && p.catch) p.catch(fallback);
+  }
+
+  // Destaca a palavra correspondente ao instante atual do áudio
+  function syncHighlight(page, audio) {
+    if (!audioMarks || !audioMarks.length) return;
+    const t = audio.currentTime;
+    let idx = lastMarkIdx;
+    while (idx + 1 < audioMarks.length && audioMarks[idx + 1].t <= t) idx++;
+    if (idx !== lastMarkIdx) {
+      lastMarkIdx = idx;
+      if (idx >= 0) highlightWord(charIndexToWord(page.text, audioMarks[idx].c));
+    }
+  }
+
+  // Narração pela voz do navegador (usada como fallback)
+  function speakBrowser(page) {
+    if (!synth) return;
+    if (synth) synth.cancel();
     const utter = new SpeechSynthesisUtterance(page.text);
     utter.lang = "pt-BR";
     utter.rate = parseFloat(rateInput.value) || 0.9;
     utter.pitch = 1.08;
     if (chosenVoice) utter.voice = chosenVoice;
 
-    // Destaque de palavras conforme a fala avança
-    let wordIdx = 0;
     utter.onboundary = (e) => {
       if (e.name && e.name !== "word") return;
       highlightWord(charIndexToWord(page.text, e.charIndex));
     };
-    // Fallback: se onboundary não disparar, avança sozinho por tempo
-    utter.onstart = () => {
-      setPlaying(true);
-    };
+    utter.onstart = () => setPlaying(true);
     utter.onend = () => {
       clearHighlight();
       setPlaying(false);
@@ -233,7 +300,6 @@
     };
 
     synth.speak(utter);
-    // Alguns navegadores pausam a fila; garantir retomada
     if (synth.paused) synth.resume();
   }
 
@@ -252,6 +318,13 @@
   }
 
   function stopSpeech() {
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.src = "";
+      currentAudio = null;
+    }
+    audioMarks = null;
+    lastMarkIdx = -1;
     if (synth) synth.cancel();
     clearHighlight();
     setPlaying(false);
@@ -309,7 +382,10 @@
       if (e.target === settingsOverlay) closeSettings();
     });
 
-    rateInput.addEventListener("input", updateRateLabel);
+    rateInput.addEventListener("input", () => {
+      updateRateLabel();
+      if (currentAudio) currentAudio.playbackRate = audioPlaybackRate();
+    });
     voiceSelect.addEventListener("change", () => {
       chosenVoice = voices.find((v) => v.name === voiceSelect.value) || null;
     });

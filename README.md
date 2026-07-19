@@ -19,7 +19,10 @@ Feito para ser simples, acolhedor e seguro para os pequeninos. 💛
   - A Ovelha Perdida
   - Jonas e o Grande Peixe
   - Jesus e as Crianças
-- **Narração por voz** em português (a criança pode só ouvir a história).
+- **Narração por voz neural** em português (voz *Francisca*, calorosa) — a
+  criança pode só ouvir a história. Os áudios são pré-gravados e servidos como
+  arquivos estáticos; se algum não puder tocar, o app usa a voz do próprio
+  navegador como reserva.
 - As palavras ficam **destacadas** enquanto são lidas — ajuda na alfabetização.
 - **Ilustração em cada página**, para a criança ver a cena acontecer.
 - **Vira a página sozinho** ao terminar de ler (opcional).
@@ -58,8 +61,30 @@ stories.js               # Texto das histórias (páginas + oração)
 scenes/                  # Ilustrações SVG de cada cena
   base.js                #   cena de oração + fallback
   <historia>.js          #   ilustrações de cada história
+audio/                   # Narração neural pré-gravada
+  <id>-<n>.mp3           #   áudio de cada página
+  <id>-<n>.json          #   marcação de tempo das palavras (destaque)
+scripts/gerar_audio.py   # Gera/atualiza os áudios (edge-tts)
 manifest.webmanifest     # Instalação como app (PWA)
 ```
+
+### 🎙️ Regenerar a narração
+
+Os áudios já vêm prontos no repositório. Para regerar (por exemplo, ao mudar o
+texto em `stories.js` ou trocar a voz):
+
+```bash
+pip install edge-tts
+node scripts/dump_paginas.js             # extrai os textos para /tmp/pages.json
+python3 scripts/gerar_audio.py           # voz padrão: pt-BR-FranciscaNeural
+# trocar a voz:
+VOICE=pt-BR-AntonioNeural python3 scripts/gerar_audio.py --force
+```
+
+> A narração neural é gerada com [`edge-tts`](https://github.com/rany2/edge-tts)
+> (vozes neurais da Microsoft), gratuito e sem chave de API. Como o texto das
+> histórias é fixo, os áudios são gerados uma vez e servidos estaticamente —
+> não há custo nem chamada de API em tempo de execução.
 
 Todas as ilustrações são **SVG embutido** — sem imagens externas, funciona
 offline.
