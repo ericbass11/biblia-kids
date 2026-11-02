@@ -16,6 +16,7 @@ import concurrent.futures
 import json
 import os
 import ssl
+import time
 import sys
 import urllib.parse
 import urllib.request
@@ -42,6 +43,9 @@ SEEDS = {
     "criacao": 11, "noe": 22, "davi": 42, "daniel": 33, "natal": 47,
     "tempestade": 55, "samaritano": 66, "ovelha": 77, "jonas": 88,
     "criancas": 99, "prayer": 100,
+    "pascoa": 120, "moises": 131, "paes": 142, "prodigo": 153, "cana": 164,
+    "jose": 175, "zaqueu": 186, "abraao": 197, "sansao": 208, "ester": 219,
+    "pentecostes": 230,
 }
 
 # Contexto de personagem por história (reforça consistência entre páginas)
@@ -54,6 +58,17 @@ ANCHOR = {
     "ovelha": "The shepherd wears a blue robe and carries a wooden staff. ",
     "jonas": "Jonah is a man with a short brown beard, green tunic and orange belt. ",
     "criancas": "Jesus has long brown hair and beard and wears a white robe with a gentle smile. ",
+    "pascoa": "Jesus has long brown hair and beard and wears a white robe. ",
+    "moises": "Moses is a man with a long white beard, a brown robe and a wooden staff. ",
+    "paes": "Jesus has long brown hair and beard and wears a white robe. ",
+    "prodigo": "The father is a kind older man in a warm red robe; the younger son is a young man in simple clothes. ",
+    "cana": "Jesus has long brown hair and beard; Mary wears a blue robe. ",
+    "jose": "Joseph is a young man with short dark hair wearing a colorful striped coat. ",
+    "zaqueu": "Zacchaeus is a very short small man in rich yellow clothes; Jesus has long brown hair, beard and a white robe. ",
+    "abraao": "Abraham is an old man with a long white beard and brown robe; Sarah is an older woman in a soft cream robe. ",
+    "sansao": "Samson is a strong young man with very long dark hair and a simple tunic. ",
+    "ester": "Esther is a young woman with long dark hair in a royal purple and gold dress. ",
+    "pentecostes": "The apostles are men in simple robes; Mary wears a blue robe. ",
 }
 
 CTX = ssl.create_default_context()
@@ -84,7 +99,7 @@ def gen(key, scene_prompt):
         f"?width={WIDTH}&height={HEIGHT}&nologo=true&seed={seed}&model={MODEL}"
     )
     last_err = None
-    for attempt in range(3):
+    for attempt in range(5):
         try:
             req = urllib.request.Request(url, headers={"User-Agent": "biblia-kids/1.0"})
             with urllib.request.urlopen(req, context=CTX, timeout=180) as r:
@@ -97,6 +112,11 @@ def gen(key, scene_prompt):
             return f"ok {key} ({len(data)} bytes)"
         except Exception as e:  # noqa: BLE001
             last_err = str(e)
+            # 402/429 = limite de taxa do serviço: espera progressiva
+            if "402" in last_err or "429" in last_err:
+                time.sleep(20 * (attempt + 1))
+            else:
+                time.sleep(2)
     return f"ERRO {key}: {last_err}"
 
 
@@ -106,7 +126,7 @@ def main():
         prompts = json.load(f)
     print(f"Cenas: {len(prompts)} | estilo: {STYLE[:40]}...")
     results = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as ex:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as ex:
         futs = {ex.submit(gen, k, v): k for k, v in prompts.items()}
         for fut in concurrent.futures.as_completed(futs):
             res = fut.result()

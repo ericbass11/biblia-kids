@@ -40,6 +40,18 @@
   let audioMarks = null; // marcação de palavras [{t, c}] da página atual
   let lastMarkIdx = -1;
 
+  // --- Consistência da voz ---------------------------------------------
+  // A voz é decidida UMA vez por história: ou todas as páginas usam o áudio
+  // neural (baixado para a memória ao abrir), ou todas usam a voz do
+  // navegador. Assim a narração nunca troca de voz no meio da história.
+  let audioMode = null; // "neural" | "browser" (da história atual)
+  let audioReady = null; // Promise que resolve com o modo escolhido
+  let audioCache = []; // por página: { url: Promise<string>, marks: Promise }
+  let objectUrls = []; // URLs de blob a liberar ao sair da história
+  let playToken = 0; // evita corridas entre páginas/histórias
+  let storyBrowserVoice = null; // voz do navegador fixada para a história
+  let storyToken = 0; // invalida carregamentos de uma história anterior
+
   // ===========================================================
   // BIBLIOTECA
   // ===========================================================
@@ -82,12 +94,74 @@
       ?.setAttribute("content", story.color);
 
     buildProgress();
+    prepareStoryAudio(story);
     showScreen("reader");
     renderPage();
   }
 
+  // Baixa TODO o áudio da história para a memória e decide a voz uma única
+  // vez. Se qualquer página falhar (após novas tentativas), a história
+  // inteira usa a voz do navegador — nunca uma mistura das duas.
+  function prepareStoryAudio(story) {
+    releaseStoryAudio();
+    audioMode = null;
+    const token = ++storyToken;
+    audioCache = pages.map((_, i) => {
+      const base = "audio/" + story.id + "-" + i;
+      return {
+        url: fetchWithRetry(base + ".mp3", 3).then((blob) => {
+          const u = URL.createObjectURL(blob);
+          // Se o usuário já trocou de história, descarta este blob
+          if (token !== storyToken) {
+            URL.revokeObjectURL(u);
+            throw new Error("história trocada");
+          }
+          objectUrls.push(u);
+          return u;
+        }),
+        marks: fetch(base + ".json")
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => (d && d.marks) || null)
+          .catch(() => null),
+      };
+    });
+    // Evita "unhandled rejection" nas promessas que falharem
+    audioCache.forEach((e) => e.url.catch(() => {}));
+
+    audioReady = Promise.allSettled(audioCache.map((e) => e.url)).then((res) => {
+      const todasOk = res.every((r) => r.status === "fulfilled");
+      const modo = todasOk ? "neural" : "browser";
+      if (token === storyToken) audioMode = modo; // só vale para a história atual
+      return modo;
+    });
+  }
+
+  function fetchWithRetry(url, tentativas) {
+    return fetch(url)
+      .then((r) => {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.blob();
+      })
+      .catch((err) => {
+        if (tentativas <= 1) throw err;
+        return new Promise((ok) => setTimeout(ok, 400)).then(() =>
+          fetchWithRetry(url, tentativas - 1)
+        );
+      });
+  }
+
+  function releaseStoryAudio() {
+    storyBrowserVoice = null;
+    objectUrls.forEach((u) => URL.revokeObjectURL(u));
+    objectUrls = [];
+    audioCache = [];
+    audioReady = null;
+    audioMode = null;
+  }
+
   function closeStory() {
     stopSpeech();
+    releaseStoryAudio();
     showScreen("library");
     document
       .querySelector('meta[name="theme-color"]')
@@ -229,34 +303,46 @@
     return Math.min(1.6, Math.max(0.6, r));
   }
 
-  // Ponto de entrada: tenta o áudio neural; se não houver/der erro, usa a voz
-  // do navegador (Web Speech API).
+  // Ponto de entrada. A voz já foi decidida para a história inteira em
+  // prepareStoryAudio(), então todas as páginas soam com a MESMA voz.
   function speakCurrent() {
     stopSpeech();
     const page = pages[pageIndex];
-    const base = "audio/" + currentStory.id + "-" + pageIndex;
+    const token = ++playToken;
 
-    const audio = new Audio();
-    audio.preload = "auto";
-    currentAudio = audio;
-    audioMarks = null;
-    lastMarkIdx = -1;
-    let fellBack = false;
+    // Enquanto o áudio da história não terminar de carregar, avisa o usuário
+    if (!audioMode) setPreparing(true);
 
-    const fallback = () => {
-      if (fellBack) return;
-      fellBack = true;
-      currentAudio = null;
-      speakBrowser(page);
-    };
-
-    // Carrega a marcação de palavras (para o destaque sincronizado)
-    fetch(base + ".json")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (data && currentAudio === audio) audioMarks = data.marks || [];
+    const decidir = audioMode ? Promise.resolve(audioMode) : audioReady;
+    (decidir || Promise.resolve("browser"))
+      .then((modo) => {
+        if (token !== playToken) return; // usuário mudou de página/história
+        setPreparing(false);
+        if (modo !== "neural") {
+          speakBrowser(page);
+          return;
+        }
+        const entrada = audioCache[pageIndex];
+        return Promise.all([entrada.url, entrada.marks]).then(([url, marks]) => {
+          if (token !== playToken) return;
+          tocarNeural(page, url, marks);
+        });
       })
-      .catch(() => {});
+      .catch(() => {
+        if (token !== playToken) return;
+        setPreparing(false);
+        // Falha inesperada: mantém a voz do navegador para a história toda
+        audioMode = "browser";
+        speakBrowser(page);
+      });
+  }
+
+  // Toca o áudio neural já carregado na memória (sem depender mais da rede)
+  function tocarNeural(page, url, marks) {
+    const audio = new Audio();
+    currentAudio = audio;
+    audioMarks = marks || null;
+    lastMarkIdx = -1;
 
     audio.playbackRate = audioPlaybackRate();
     audio.addEventListener("playing", () => setPlaying(true));
@@ -269,11 +355,9 @@
         setTimeout(() => goTo(pageIndex + 1, true), 700);
       }
     });
-    audio.addEventListener("error", fallback);
-
-    audio.src = base + ".mp3";
+    audio.src = url;
     const p = audio.play();
-    if (p && p.catch) p.catch(fallback);
+    if (p && p.catch) p.catch(() => setPlaying(false));
   }
 
   // Destaca a palavra correspondente ao instante atual do áudio
@@ -296,7 +380,10 @@
     utter.lang = "pt-BR";
     utter.rate = parseFloat(rateInput.value) || 0.9;
     utter.pitch = 1.08;
-    if (chosenVoice) utter.voice = chosenVoice;
+    // Fixa a voz na primeira página e reusa até o fim da história, para que
+    // ela não mude caso a lista de vozes do navegador carregue mais tarde.
+    if (!storyBrowserVoice) storyBrowserVoice = chosenVoice || null;
+    if (storyBrowserVoice) utter.voice = storyBrowserVoice;
 
     utter.onboundary = (e) => {
       if (e.name && e.name !== "word") return;
@@ -334,6 +421,8 @@
   }
 
   function stopSpeech() {
+    playToken++; // cancela qualquer reprodução que ainda esteja sendo preparada
+    setPreparing(false);
     if (currentAudio) {
       currentAudio.pause();
       currentAudio.src = "";
@@ -344,6 +433,21 @@
     if (synth) synth.cancel();
     clearHighlight();
     setPlaying(false);
+  }
+
+  // Mostra "Preparando..." enquanto o áudio da história carrega
+  function setPreparing(state) {
+    if (state) {
+      playBtn.querySelector(".play-icon").textContent = "⏳";
+      playBtn.querySelector(".play-label").textContent = "Preparando…";
+      playBtn.disabled = true;
+    } else {
+      playBtn.disabled = false;
+      if (!isPlaying) {
+        playBtn.querySelector(".play-icon").textContent = "▶";
+        playBtn.querySelector(".play-label").textContent = "Ouvir";
+      }
+    }
   }
 
   function setPlaying(state) {
@@ -404,6 +508,7 @@
     });
     voiceSelect.addEventListener("change", () => {
       chosenVoice = voices.find((v) => v.name === voiceSelect.value) || null;
+      storyBrowserVoice = chosenVoice; // troca explícita do usuário vale
     });
 
     // Teclado (setas + espaço)
