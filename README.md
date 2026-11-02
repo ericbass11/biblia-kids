@@ -8,21 +8,28 @@ Feito para ser simples, acolhedor e seguro para os pequeninos. 💛
 
 ## ✨ O que tem no app
 
-- **10 histórias da Bíblia** contadas com linguagem carinhosa para crianças:
-  - A Criação do Mundo
-  - Noé e a Arca
-  - Davi e Golias
-  - Daniel na Cova dos Leões
-  - O Nascimento de Jesus
-  - Jesus Acalma a Tempestade
-  - O Bom Samaritano
-  - A Ovelha Perdida
-  - Jonas e o Grande Peixe
-  - Jesus e as Crianças
+- **21 histórias da Bíblia** contadas com linguagem carinhosa para crianças:
+
+  | Antigo Testamento | Vida de Jesus |
+  |---|---|
+  | A Criação do Mundo | O Nascimento de Jesus |
+  | Noé e a Arca | Jesus Acalma a Tempestade |
+  | Abraão e a Promessa | As Bodas de Caná |
+  | José do Egito | A Multiplicação dos Pães |
+  | Moisés e o Mar Vermelho | Jesus e as Crianças |
+  | Sansão | Zaqueu |
+  | Davi e Golias | O Bom Samaritano |
+  | Daniel na Cova dos Leões | A Ovelha Perdida |
+  | A Rainha Ester | O Filho Pródigo |
+  | Jonas e o Grande Peixe | A Páscoa de Jesus |
+  | | Pentecostes |
+
 - **Narração por voz neural** em português (voz *Francisca*, calorosa) — a
   criança pode só ouvir a história. Os áudios são pré-gravados e servidos como
-  arquivos estáticos; se algum não puder tocar, o app usa a voz do próprio
-  navegador como reserva.
+  arquivos estáticos. **A voz é a mesma do início ao fim de cada história**:
+  o app carrega todo o áudio ao abrir a história e decide a voz uma única vez,
+  então a narração nunca troca de voz no meio. Se o áudio não puder tocar, a
+  história inteira usa a voz do navegador como reserva.
 - As palavras ficam **destacadas** enquanto são lidas — ajuda na alfabetização.
 - **Ilustração em 3D (estilo desenho animado) em cada página**, para a criança
   ver a cena acontecer. Se alguma imagem faltar, o app usa uma ilustração

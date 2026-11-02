@@ -126,7 +126,7 @@ def main():
         prompts = json.load(f)
     print(f"Cenas: {len(prompts)} | estilo: {STYLE[:40]}...")
     results = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as ex:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
         futs = {ex.submit(gen, k, v): k for k, v in prompts.items()}
         for fut in concurrent.futures.as_completed(futs):
             res = fut.result()
