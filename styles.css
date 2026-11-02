@@ -1,0 +1,587 @@
+/* ===========================================================
+   Bíblia Kids — estilos
+   =========================================================== */
+:root {
+  --bg: #fdf6ec;
+  --bg-2: #f6ead6;
+  --ink: #3a2b1a;
+  --ink-soft: #6b5842;
+  --paper: #fffdf8;
+  --accent: #7c5cff;
+  --accent-2: #ffb02e;
+  --shadow: 0 18px 40px rgba(74, 47, 143, 0.18);
+  --radius: 26px;
+  --font: "Baloo 2", "Comic Sans MS", "Trebuchet MS", "Segoe UI", system-ui,
+    sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font);
+  color: var(--ink);
+  background: radial-gradient(circle at 20% 0%, #fff7e9 0%, var(--bg) 40%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+  background-attachment: fixed;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* ---------- Telas ---------- */
+.screen {
+  display: none;
+  min-height: 100dvh;
+}
+.screen.is-active {
+  display: block;
+}
+.reader.is-active {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===========================================================
+   BIBLIOTECA
+   =========================================================== */
+.lib-header {
+  padding: 28px 20px 8px;
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: center;
+}
+.lib-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+}
+.lib-logo {
+  font-size: 52px;
+  filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.15));
+}
+.lib-brand h1 {
+  margin: 0;
+  font-size: clamp(28px, 6vw, 44px);
+  color: #4a2f8f;
+  letter-spacing: 0.5px;
+}
+.lib-brand p {
+  margin: 2px 0 0;
+  color: var(--ink-soft);
+  font-size: clamp(13px, 3vw, 17px);
+}
+.lib-intro {
+  margin: 18px auto 0;
+  max-width: 520px;
+  background: var(--paper);
+  border: 3px dashed #f0c86a;
+  border-radius: 20px;
+  padding: 12px 18px;
+  font-size: clamp(14px, 3.4vw, 18px);
+  color: var(--ink-soft);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.story-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+  max-width: 1100px;
+  margin: 26px auto;
+  padding: 0 20px;
+}
+
+.story-card {
+  position: relative;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  border-radius: var(--radius);
+  padding: 0;
+  overflow: hidden;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  font-family: inherit;
+  color: inherit;
+}
+.story-card:hover,
+.story-card:focus-visible {
+  transform: translateY(-6px) rotate(-0.4deg);
+  box-shadow: 0 24px 46px rgba(74, 47, 143, 0.26);
+  outline: none;
+}
+.story-card__cover {
+  height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 62px;
+  color: #fff;
+  position: relative;
+}
+.story-card__cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 70% 20%,
+    rgba(255, 255, 255, 0.35),
+    transparent 60%
+  );
+}
+.story-card__body {
+  padding: 14px 16px 18px;
+}
+.story-card__body h3 {
+  margin: 0 0 4px;
+  font-size: 20px;
+  color: #4a2f8f;
+  line-height: 1.15;
+}
+.story-card__body p {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: var(--ink-soft);
+  min-height: 34px;
+}
+.story-card__ref {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #b07a1e;
+  background: #fff2d1;
+  border-radius: 999px;
+  padding: 3px 10px;
+}
+.story-card__play {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  color: #4a2f8f;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.lib-footer {
+  text-align: center;
+  padding: 10px 20px 40px;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+/* ===========================================================
+   LEITOR
+   =========================================================== */
+.reader-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  max-width: 1000px;
+  margin: 0 auto;
+  width: 100%;
+}
+.reader-title {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+.reader-title h2 {
+  margin: 0;
+  font-size: clamp(18px, 4.5vw, 26px);
+  color: #4a2f8f;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.reader-ref {
+  font-size: 12px;
+  font-weight: 700;
+  color: #b07a1e;
+  background: #fff2d1;
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
+.icon-btn {
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: none;
+  background: var(--paper);
+  color: #4a2f8f;
+  font-size: 22px;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+  transition: transform 0.15s ease;
+}
+.icon-btn:active {
+  transform: scale(0.92);
+}
+
+/* ---------- O livro ---------- */
+.book {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 6px 12px 0;
+  max-width: 1000px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.page {
+  position: relative;
+  flex: 1;
+  max-width: 760px;
+  background: var(--paper);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: pageIn 0.4s ease;
+}
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.page.turning {
+  animation: pageTurn 0.32s ease;
+}
+@keyframes pageTurn {
+  0% {
+    opacity: 0.2;
+    transform: rotateY(-8deg) translateX(-14px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.illustration {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background: #eef4ff;
+  display: block;
+  position: relative;
+}
+.illustration svg,
+.illustration .scene-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.illustration .scene-img {
+  object-fit: cover;
+}
+
+.page-text-wrap {
+  padding: 18px 22px 22px;
+  background: linear-gradient(180deg, var(--paper), #fffaf0);
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.page-text {
+  margin: 0;
+  font-size: clamp(18px, 4.4vw, 24px);
+  line-height: 1.5;
+  color: var(--ink);
+  font-weight: 500;
+}
+.page-text .w {
+  transition: background 0.1s linear, color 0.1s linear;
+  border-radius: 6px;
+  padding: 0 1px;
+}
+.page-text .w.spoken {
+  background: var(--accent-2);
+  color: #3a2b1a;
+}
+.page-text.prayer {
+  font-style: italic;
+  text-align: center;
+  color: #6b4bd6;
+}
+.page-text.prayer::before {
+  content: "🙏 Oração";
+  display: block;
+  font-style: normal;
+  font-weight: 700;
+  color: #b07a1e;
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.page-arrow {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: var(--paper);
+  color: #4a2f8f;
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.14);
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.page-arrow:active {
+  transform: scale(0.9);
+}
+.page-arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* ---------- Controles ---------- */
+.reader-controls {
+  max-width: 760px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
+}
+.progress {
+  display: flex;
+  gap: 7px;
+  justify-content: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #e3d5bd;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+.dot.active {
+  background: var(--accent);
+  transform: scale(1.35);
+}
+.dot.done {
+  background: var(--accent-2);
+}
+
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ctrl-btn {
+  border: none;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 14px 18px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s;
+}
+.ctrl-btn:active {
+  transform: scale(0.95);
+}
+.ctrl-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.ctrl-btn--ghost {
+  background: var(--paper);
+  color: #4a2f8f;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.1);
+  flex: 0 0 auto;
+}
+.ctrl-btn--play {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #fff;
+  background: linear-gradient(135deg, #7c5cff, #b06bff);
+  box-shadow: 0 10px 22px rgba(124, 92, 255, 0.4);
+  font-size: 19px;
+  padding: 16px;
+}
+.ctrl-btn--play.playing {
+  background: linear-gradient(135deg, #ff8f3a, #ffb02e);
+  box-shadow: 0 10px 22px rgba(255, 143, 58, 0.4);
+}
+
+/* ===========================================================
+   CONFIGURAÇÕES
+   =========================================================== */
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(40, 24, 80, 0.5);
+  backdrop-filter: blur(3px);
+  z-index: 50;
+  align-items: flex-end;
+  justify-content: center;
+}
+.overlay.is-open {
+  display: flex;
+}
+.settings-panel {
+  background: var(--paper);
+  width: 100%;
+  max-width: 460px;
+  border-radius: 26px 26px 0 0;
+  padding: 20px 22px calc(28px + env(safe-area-inset-bottom));
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.25);
+  animation: slideUp 0.28s ease;
+}
+@media (min-width: 560px) {
+  .overlay {
+    align-items: center;
+  }
+  .settings-panel {
+    border-radius: 26px;
+  }
+}
+@keyframes slideUp {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.settings-head h3 {
+  margin: 0;
+  color: #4a2f8f;
+  font-size: 22px;
+}
+.setting {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 4px;
+  border-bottom: 2px dotted #eee0c8;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.setting > span:first-child {
+  flex: 1;
+}
+.setting input[type="range"] {
+  flex: 1.4;
+  accent-color: var(--accent);
+}
+.setting-val {
+  min-width: 66px;
+  text-align: right;
+  color: #4a2f8f;
+}
+.setting select {
+  flex: 1.6;
+  font-family: inherit;
+  font-size: 15px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 2px solid #e3d5bd;
+  background: #fff;
+  color: var(--ink);
+}
+.setting--switch .switch {
+  width: 52px;
+  height: 30px;
+  border-radius: 999px;
+  background: #ddd0b8;
+  position: relative;
+  transition: background 0.2s;
+  flex: 0 0 auto;
+}
+.setting--switch .switch::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+.setting--switch input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+.setting--switch input:checked ~ .switch {
+  background: var(--accent);
+}
+.setting--switch input:checked ~ .switch::after {
+  transform: translateX(22px);
+}
+.setting-note {
+  margin: 8px 2px 0;
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.4;
+}
+.voice-warn {
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: #b23b3b;
+  background: #ffe9e9;
+  border-radius: 14px;
+  padding: 10px 14px;
+}
+
+/* ---------- Layout amplo: livro lado a lado ---------- */
+@media (min-width: 880px) {
+  .page {
+    flex-direction: row;
+    max-width: 900px;
+  }
+  .illustration {
+    width: 52%;
+    aspect-ratio: auto;
+    align-self: stretch;
+  }
+  .page-text-wrap {
+    width: 48%;
+  }
+}
